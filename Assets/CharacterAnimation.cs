@@ -10,10 +10,16 @@ public class CharacterAnimation : MonoBehaviour
 {
     Animator anim;
     public GameObject gameOverPanel;
+    public GameObject winText;
+    public GameObject loseText;
     public GameObject restartButton;
     public float moveSpeed = 10f;
     public float turnSpeed = 50f;
     MazeMaze maze;
+    PathPointUnity[,] cells;
+    private int maxX;
+    private int maxZ;
+    List<string> path;
 
     // Start is called before the first frame update
     void Start()
@@ -21,9 +27,16 @@ public class CharacterAnimation : MonoBehaviour
         anim = GetComponent<Animator>();
         gameOverPanel.SetActive(false);
         restartButton.SetActive(false);
+        winText.SetActive(false);
+        loseText.SetActive(false);
         var button = restartButton.GetComponent<Button>();
         button.onClick.AddListener(Restart);
-        maze = GetComponent<MazeMaze>();
+        maze = FindObjectOfType<MazeMaze>();
+        maxX = maze.sizeX;
+        maxZ = maze.sizeZ;
+        //cells = maze.cellsUnity;
+        path = new List<string>();
+        
     }
 
     public void Restart()
@@ -36,11 +49,28 @@ public class CharacterAnimation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Mathf.RoundToInt(transform.localPosition.x) >= 100 && Mathf.RoundToInt(transform.localPosition.z) >= 100)
+        int currentX = Mathf.RoundToInt(transform.localPosition.x) + 5;
+        int currentZ = Mathf.RoundToInt(transform.localPosition.z) - 5;
+
+        if (!path.Contains(currentZ.ToString() + ", " + currentX.ToString()))
         {
+            path.Add(currentZ.ToString() + ", " + currentX.ToString());
+        }
+
+        if (currentX >= maxZ && currentZ >= maxX)
+        {
+            if (path.Count == MazeMaze.pathLength)
+            {
+                winText.SetActive(true);
+            }
+            else
+            {
+                loseText.SetActive(true);
+            }
             gameOverPanel.SetActive(true);
             anim.SetBool("Walk", false);
             restartButton.SetActive(true);
+            return;
         }
 
         if (Input.GetKeyDown(KeyCode.UpArrow))
